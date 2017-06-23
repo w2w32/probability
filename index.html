@@ -1,0 +1,142 @@
+<!doctype HTML>
+<html>
+<head>
+<script type="text/javascript">
+var samples,start,end,step;
+
+var intervalArray=[];
+var randomArray=[];
+
+var intervalWidth;
+var can;
+var ctx;
+function init(){
+	can=document.getElementById("can0");
+	ctx=can0.getContext("2d");
+	update();
+	}
+function sin(a){return Math.sin(a)}
+function cos(a){return Math.cos(a)}
+function tan(a){return Math.tan(a)}
+function ln(a){return Math.log(a)}
+function exp(a){return Math.exp(a)}
+function pow(a,b){return Math.pow(a,b)}
+function sqrt(a){return Math.sqrt(a)}
+function asin(a){return Math.asin(a)}
+function acos(a){return Math.acos(a)}
+function atan(a){return Math.atan(a)}
+function abs(a){return Math.abs(a)}
+var pi=Math.PI;
+var e=Math.E;
+
+function pdf(x){
+return eval(document.getElementById("input1").value);
+}
+function graph(){
+	//var s=new Date().getTime();
+	update();
+	document.getElementById("message").innerText="";
+	ctx.clearRect(0,0,can.width,can.height);
+	for(var i=0;i<(end-start)/step;i++){
+		intervalArray[i]=0;
+	}
+	intervalWidth=step*can.width/(end-start);
+	for(var j=0;j<samples;j++){
+		randomArray[j]=Math.random();
+	}
+	ctx.fillStyle="rgb(0,0,255)";
+	var cdf=0;
+	var cdf0=0;
+	ctx.beginPath()
+	for(var i=start;i<=end;i+=step){
+		cdf0=cdf;
+		cdf+=step*(pdf(i)+pdf(i+step))/2;
+		var k=Math.round((i-start)/step);
+		ctx.lineTo((i-start)*intervalWidth/step,can.height-pdf(i)*can.height);
+		
+		for(var j=0;j<samples;j++){
+			if(cdf0<randomArray[j]&&randomArray[j]<=cdf){
+				intervalArray[k]++;
+		}
+		ctx.fillRect(k*intervalWidth,can.height,intervalWidth,0-intervalArray[k]*can.height/(samples*step));
+		}
+	}
+	ctx.lineTo((end-start)*intervalWidth/step,can.height-pdf(end)*can.height);
+	ctx.stroke();
+	//console.log((new Date().getTime()-s));
+}
+function update(){
+start=eval(document.getElementById("input2").value);
+end=eval(document.getElementById("input3").value);
+step=eval(document.getElementById("input4").value);
+samples=eval(document.getElementById("input5").value);
+if(start<end){
+document.getElementById("marker1").innerText=start;
+document.getElementById("marker3").style.left="1000px";
+document.getElementById("marker3").innerText=end;
+	if(start<0&&end>0){
+		document.getElementById("marker2").hidden=false;
+		document.getElementById("marker2").style.left=""+-start*can.width/(end-start)+"px";
+	}else{
+	document.getElementById("marker2").hidden=true;
+	}
+}
+}
+function check(){
+update();
+var cdf=0;
+var cdf0=0;
+var h=(end-start)/1000;
+document.getElementById("message").style.color="#e33"
+for(var i=start;i<=end;i+=h){
+	if(pdf(i)<0){
+		document.getElementById("message").innerText="function takes negative value";
+		return;
+	}
+	cdf+=h*(pdf(i)+pdf(i+h))/2;
+}
+	//console.log(cdf);
+if(0.9>cdf){
+	document.getElementById("message").innerText="integral is too low";
+}else if(cdf>1.1){
+	document.getElementById("message").innerText="integral is too high";
+}else{
+	document.getElementById("message").style.color="#3e3";
+	document.getElementById("message").innerText="seems good!";
+}
+}
+</script>
+<style>
+body{
+font-family:sans-serif;
+}
+canvas{
+background-color:#fff;
+}
+.marker{
+position:absolute
+}
+#marker3{
+text-align:right;
+}
+#message{
+text-align:right;
+position:absolute;
+left:500px;
+width:500px;
+}
+</style>
+<title>Random Variable Sampling</title>
+</head>
+<body bgcolor="#bbb" onload="init()">
+Density Function:<input type="text" id="input1" size="40" value="exp(-(x)*(x)/2)/sqrt(2*pi)">
+(should be nonnegative, and the integral over the region should be 1) <button onclick="check()">Check</button>
+<br>
+<input type="text" id="input2" size="5" value="-5"> < x < <input type="text" id="input3" size="5" value="5">
+Step size:<input type="text" id="input4" size="5" value="0.1"> Samples:<input type="text" id="input5" size="5" value="2000">
+<span id="message"></span>
+<br>
+<canvas height="240" width="1000" id="can0" onclick="graph()"></canvas>
+<br><span class="marker" id="marker1"></span><span class="marker" id="marker2">0</span><span class="marker" id="marker3"></span>
+</body>
+</html>
