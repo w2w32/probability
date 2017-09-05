@@ -3,7 +3,6 @@
 <head>
 <script type="text/javascript">
 var samples,start,end,step;
-
 var intervalArray=[];
 var randomArray=[];
 
@@ -44,6 +43,7 @@ function graph(){
 	for(var j=0;j<samples;j++){
 		randomArray[j]=Math.random();
 	}
+	randomArray=randomArray.sort();
 	ctx.fillStyle="rgb(0,0,255)";
 	var cdf=0;
 	var cdf0=0;
@@ -54,10 +54,14 @@ function graph(){
 		var k=Math.round((i-start)/step);
 		ctx.lineTo((i-start)*intervalWidth/step,can.height-pdf(i)*can.height);
 		
-		for(var j=0;j<samples;j++){
-			if(cdf0<randomArray[j]&&randomArray[j]<=cdf){
-				intervalArray[k]++;
-		}
+		for(var j=0;j<randomArray.length;j++){
+			if(cdf0<randomArray[j]){
+				if(randomArray[j]<=cdf){
+					intervalArray[k]++;
+				}else{break}
+			}else{
+			randomArray=randomArray.slice(j,randomArray.length);
+			}
 		ctx.fillRect(k*intervalWidth,can.height,intervalWidth,0-intervalArray[k]*can.height/(samples*step));
 		}
 	}
