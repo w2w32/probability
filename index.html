@@ -58,7 +58,7 @@ function graph(){
 			if(cdf0<randomArray[j]){
 				if(randomArray[j]<=cdf){
 					intervalArray[k]++;
-					randomArray.splice(j,1);
+					randomArray.splice(j-1,1);
 				}else{break}
 			}else{j++}
 		ctx.fillRect(k*intervalWidth,can.height,intervalWidth,0-intervalArray[k]*can.height/(samples*step));
