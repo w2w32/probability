@@ -54,11 +54,11 @@ function graph(){
 		var k=Math.round((i-start)/step);
 		ctx.lineTo((i-start)*intervalWidth/step,can.height-pdf(i)*can.height);
 		
-		for(var j=0;j<randomArray.length;j++){
+		for(var j=0;j<randomArray.length;){
 			if(cdf0<randomArray[j]){
 				if(randomArray[j]<=cdf){
 					intervalArray[k]++;
-					randomArray.splice(j-1,1);
+					randomArray.splice(j,1);
 				}else{break}
 			}else{j++}
 		ctx.fillRect(k*intervalWidth,can.height,intervalWidth,0-intervalArray[k]*can.height/(samples*step));
