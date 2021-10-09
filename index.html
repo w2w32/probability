@@ -28,6 +28,7 @@ function abs(a){return Math.abs(a)}
 var pi=Math.PI;
 var e=Math.E;
 
+var cdf_scale = 1;
 function pdf(x){
 return eval(document.getElementById("input1").value);
 }
@@ -50,9 +51,9 @@ function graph(){
 	ctx.beginPath()
 	for(var i=start;i<=end;i+=step){
 		cdf0=cdf;
-		cdf+=step*(pdf(i)+pdf(i+step))/2;
+		cdf+=step*(pdf(i)*cdf_scale+pdf(i+step)*cdf_scale)/2;
 		var k=Math.round((i-start)/step);
-		ctx.lineTo((i-start)*intervalWidth/step,can.height-pdf(i)*can.height);
+		ctx.lineTo((i-start)*intervalWidth/step,can.height-pdf(i)*cdf_scale*can.height);
 		
 		for(var j=0;j<randomArray.length;){
 			if(cdf0<randomArray[j]){
@@ -64,7 +65,7 @@ function graph(){
 		ctx.fillRect(k*intervalWidth,can.height,intervalWidth,0-intervalArray[k]*can.height/(samples*step));
 		}
 	}
-	ctx.lineTo((end-start)*intervalWidth/step,can.height-pdf(end)*can.height);
+	ctx.lineTo((end-start)*intervalWidth/step,can.height-pdf(end)*cdf_scale*can.height);
 	ctx.stroke();
 	//console.log((new Date().getTime()-s));
 }
@@ -85,28 +86,24 @@ document.getElementById("marker3").innerText=end;
 	}
 }
 }
-function check(){
-update();
-var cdf=0;
-var cdf0=0;
-var h=(end-start)/1000;
-document.getElementById("message").style.color="#e33"
-for(var i=start;i<=end;i+=h){
-	if(pdf(i)<0){
-		document.getElementById("message").innerText="function takes negative value";
-		return;
+function normalize_pdf(){
+	update();
+	var cdf=0;
+	var cdf0=0;
+	var h=(end-start)/1000;
+	document.getElementById("message").style.color="#e33"
+	for(var i=0;i<=1000;i++){
+		if(pdf(start+h*i)<0){
+			document.getElementById("message").innerText="function takes negative value";
+			return;
+		}
+		//maybe twice as many pdf calls as necessary
+		cdf+=h*(pdf(start+h*i)+pdf(start+h*i+h))/2;
+		
 	}
-	cdf+=h*(pdf(i)+pdf(i+h))/2;
-}
 	//console.log(cdf);
-if(0.9>cdf){
-	document.getElementById("message").innerText="integral is too low";
-}else if(cdf>1.1){
-	document.getElementById("message").innerText="integral is too high";
-}else{
-	document.getElementById("message").style.color="#3e3";
-	document.getElementById("message").innerText="seems good!";
-}
+	cdf_scale = 1/cdf;
+	document.getElementById("norm_value").innerText = " - multiply by " + cdf_scale.toFixed(4);
 }
 </script>
 <style>
@@ -132,8 +129,9 @@ width:500px;
 <title>Random Variable Sampling</title>
 </head>
 <body bgcolor="#bbb" onload="init()">
-Density Function:<input type="text" id="input1" size="40" value="exp(-(x)*(x)/2)/sqrt(2*pi)">
-(should be nonnegative, and the integral over the region should be 1) <button onclick="check()">Check</button>
+Density Function:<input type="text" id="input1" size="30" value="exp(-(x)*(x)/2)/sqrt(2*pi)">
+(should be nonnegative, and the integral over the region should be 1) <br>
+<button onclick="normalize_pdf()">Normalize</button><span id="norm_value"></span>
 <br>
 <input type="text" id="input2" size="5" value="-5"> < x < <input type="text" id="input3" size="5" value="5">
 Bin size:<input type="text" id="input4" size="5" value="0.1"> Samples:<input type="text" id="input5" size="5" value="2000">
